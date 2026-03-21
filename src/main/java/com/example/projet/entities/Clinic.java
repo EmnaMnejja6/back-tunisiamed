@@ -41,4 +41,6 @@ public class Clinic {
     private List<ClinicSpecialty> clinicSpecialities;
     @OneToMany(mappedBy="clinic")
     private List<Review> reviews;
+    /*@OneToMany(mappedBy="clinic")
+    private List<Quote> quotes;*/
 }
