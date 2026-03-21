@@ -2,6 +2,7 @@ package com.example.projet.services;
 import com.example.projet.entities.Clinic;
 import com.example.projet.entities.ClinicSpecialty;
 import com.example.projet.entities.Doctor;
+import com.example.projet.entities.Review;
 
 import java.util.List;
 
