@@ -31,7 +31,7 @@ public class AppointmentServiceImpl implements IAppointmentService {
         Appointment appointment = new Appointment();
         appointment.setQuote(quote);
         appointment.setStatus(AppointmentStatus.CONFIRMED);
-        //appointment.setAppointmentDate(LocalDateTime.now().plusDays(quote.getDurationDays()));
+        appointment.setAppointmentDate(LocalDateTime.now().plusDays(quote.getDurationDays()));
 
         appointmentRepository.save(appointment);
     }
