@@ -16,6 +16,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import java.time.LocalDateTime;
 
+import com.example.projet.entities.enums.PaymentStatus;
+
+import jakarta.persistence.EnumType;
+
 
 @Entity
 @Data

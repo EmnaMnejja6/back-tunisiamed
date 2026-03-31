@@ -14,7 +14,6 @@ public interface ClinicRepository extends JpaRepository<Clinic, Long> {
     public List<Clinic> findByCityAndClinicSpecialitiesSpecialtyTypeId(String city, Long specialtyId);
     public List<Clinic> findByCity(String city);
     public List<Clinic> findByClinicSpecialitiesSpecialtyTypeId(Long specialtyId);
-    @Query("SELECT d FROM Doctor d WHERE d.specialty.id IN " +
-        "(SELECT s.id FROM Clinic c JOIN c.specialties s WHERE c.id = :clinicId)")
+    @Query("SELECT d FROM Doctor d WHERE d.clinicSpecialty.clinic.id = :clinicId")
     public List<Doctor> findDoctorsByClinicId(@Param("clinicId") Long clinicId);
 }

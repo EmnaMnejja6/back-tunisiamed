@@ -2,9 +2,12 @@ package com.example.projet.entities;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.example.projet.entities.enums.AppointmentStatus;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -17,6 +20,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.CascadeType;
 import java.time.LocalDateTime;
 import java.util.List;
+import jakarta.persistence.EnumType;
 
 @Entity
 @Data
@@ -27,8 +31,6 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne
-    private Quote quote;
     @Column(nullable=false)
     private LocalDateTime appointmentDate;
     @Enumerated(EnumType.STRING)
@@ -37,6 +39,9 @@ public class Appointment {
     private LocalDateTime createdAt;
     @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
     private Payment payment;
-    @OneToMany(mappedBy = "appointment")
+    @OneToOne(mappedBy="appointment")
+    private Quote quote;
+    @OneToMany
+    @JoinColumn(name="appointment_id")
     private List<Review> reviews;
 }
