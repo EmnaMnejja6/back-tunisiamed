@@ -29,7 +29,7 @@ public class Quote {
     private Clinic clinic;
 
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "clinic_specialty_id", nullable = false)
     private ClinicSpecialty clinicSpecialty;
 
     @Column(nullable = false)

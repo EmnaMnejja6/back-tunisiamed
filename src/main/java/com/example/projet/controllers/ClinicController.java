@@ -13,12 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.projet.dto.ClinicDTO;
 import com.example.projet.entities.Clinic;
 import com.example.projet.entities.ClinicSpecialty;
 import com.example.projet.entities.Doctor;
 import com.example.projet.entities.Review;
 import com.example.projet.services.IClinicService;
 import java.util.List;
+import com.example.projet.mappers.ClinicMapper;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/clinics")
@@ -27,20 +30,28 @@ public class ClinicController {
     @Autowired
     private IClinicService clinicService;
 
+    @Autowired
+    private ClinicMapper clinicMapper;
+
     // GET /api/clinics?city=Tunis&specialtyId=1
     @GetMapping
     //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<Clinic>> getAllClinics(
+    public ResponseEntity<List<ClinicDTO>> getAllClinics(
             @RequestParam(required = false) String city,
             @RequestParam(required = false) Long specialtyId) {
-        return ResponseEntity.ok(clinicService.getAllClinics(city, specialtyId));
+        List<Clinic> clinics = clinicService.getAllClinics(city, specialtyId);
+        List<ClinicDTO> dtos = clinics.stream()
+                .map(clinicMapper::toDTO)
+                .collect(Collectors.toList());        
+        return ResponseEntity.ok(dtos);
     }
 
     // GET /api/clinics/{id}
     @GetMapping("/{id}")
     //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<Clinic> getClinicById(@PathVariable Long id) {
-        return ResponseEntity.ok(clinicService.getClinicById(id));
+    public ResponseEntity<ClinicDTO> getClinicById(@PathVariable Long id) {
+        //return ResponseEntity.ok(clinicService.getClinicById(id));
+        return ResponseEntity.ok(clinicMapper.toDTO(clinicService.getClinicById(id)));
     }
 
     // GET /api/clinics/{id}/doctors

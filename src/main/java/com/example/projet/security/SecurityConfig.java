@@ -1,5 +1,6 @@
 package com.example.projet.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,7 +22,8 @@ import com.example.projet.config.CorsConfig;
 @EnableMethodSecurity  
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
     private final CorsConfig corsConfig;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter, CorsConfig corsConfig) {
