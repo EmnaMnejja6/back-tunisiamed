@@ -39,9 +39,8 @@ public class Appointment {
     private LocalDateTime createdAt;
     @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
     private Payment payment;
-    @OneToOne(mappedBy="appointment")
+    @OneToOne
     private Quote quote;
-    @OneToMany
-    @JoinColumn(name="appointment_id")
+    @OneToMany(mappedBy="appointment")
     private List<Review> reviews;
 }
