@@ -14,12 +14,19 @@ import com.example.projet.services.IAppointmentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
+import com.example.projet.dto.AppointmentDTO;
+import com.example.projet.mappers.AppointmentMapper;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
 
     @Autowired
     private IAppointmentService appointmentService;
+
+    @Autowired
+    private AppointmentMapper appointmentMapper;
 
     // POST /api/appointments — PATIENT
     @PostMapping
@@ -32,22 +39,26 @@ public class AppointmentController {
     // GET /api/appointments/my — PATIENT
     @GetMapping("/my")
     //@PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<List<Appointment>> getMyAppointments(@RequestParam Long patientId) {
-        return ResponseEntity.ok(appointmentService.getMyAppointments(patientId));
+    public ResponseEntity<List<AppointmentDTO>> getMyAppointments(@RequestParam Long patientId) {
+        return ResponseEntity.ok(appointmentService.getMyAppointments(patientId).stream()
+            .map(appointmentMapper::toDTO)
+            .collect(Collectors.toList()));
     }
 
     // GET /api/appointments/clinic — CLINIC_ADMIN
     @GetMapping("/clinic")
     //@PreAuthorize("hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<List<Appointment>> getAppointmentsByClinic(@RequestParam Long clinicId) {
-        return ResponseEntity.ok(appointmentService.getAppointmentByClinic(clinicId));
+    public ResponseEntity<List<AppointmentDTO>> getAppointmentsByClinic(@RequestParam Long clinicId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentByClinic(clinicId).stream()
+            .map(appointmentMapper::toDTO)
+            .collect(Collectors.toList()));
     }
 
     // GET /api/appointments/{id} — PATIENT / CLINIC_ADMIN
     @GetMapping("/{id}")
     //@PreAuthorize("hasRole('PATIENT') or hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<Appointment> getAppointmentById(@PathVariable Long id) {
-        return ResponseEntity.ok(appointmentService.getAppointmentById(id));
+    public ResponseEntity<AppointmentDTO> getAppointmentById(@PathVariable Long id) {
+        return ResponseEntity.ok(appointmentMapper.toDTO(appointmentService.getAppointmentById(id)));
     }
 
     // PATCH /api/appointments/{id}/complete — CLINIC_ADMIN

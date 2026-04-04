@@ -8,9 +8,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.projet.dto.SpecialtyTypeDTO;
 import com.example.projet.entities.SpecialtyType;
 import com.example.projet.services.ISpecialtyTypeService;
 import java.util.List;
+
+import com.example.projet.mappers.SpecialtyTypeMapper;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/specialty-types")
@@ -19,11 +24,16 @@ public class SpecialtyTypeController {
     @Autowired
     private ISpecialtyTypeService specialtyTypeService;
 
+    @Autowired
+    private SpecialtyTypeMapper specialtyTypeMapper;
+
     // GET /api/specialty-types — public
     @GetMapping
     //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<SpecialtyType>> getAllSpecialtyTypes() {
-        return ResponseEntity.ok(specialtyTypeService.getAllSpecialtyTypes());
+    public ResponseEntity<List<SpecialtyTypeDTO>> getAllSpecialtyTypes() {
+        return ResponseEntity.ok(specialtyTypeService.getAllSpecialtyTypes().stream()
+            .map(specialtyTypeMapper::toDTO)
+            .collect(Collectors.toList()));
     }
 
     // POST /api/specialty-types — ADMIN

@@ -13,14 +13,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.projet.dto.ClinicDTO;
 import com.example.projet.entities.Clinic;
 import com.example.projet.entities.ClinicSpecialty;
 import com.example.projet.entities.Doctor;
 import com.example.projet.entities.Review;
 import com.example.projet.services.IClinicService;
 import java.util.List;
+
+import com.example.projet.dto.ClinicDTO;
+import com.example.projet.dto.ClinicSpecialtyDTO;
+import com.example.projet.dto.DoctorDTO;
+import com.example.projet.dto.ReviewDTO;
 import com.example.projet.mappers.ClinicMapper;
+
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,7 +34,6 @@ public class ClinicController {
 
     @Autowired
     private IClinicService clinicService;
-
     @Autowired
     private ClinicMapper clinicMapper;
 
@@ -39,49 +43,56 @@ public class ClinicController {
     public ResponseEntity<List<ClinicDTO>> getAllClinics(
             @RequestParam(required = false) String city,
             @RequestParam(required = false) Long specialtyId) {
-        List<Clinic> clinics = clinicService.getAllClinics(city, specialtyId);
-        List<ClinicDTO> dtos = clinics.stream()
+        return ResponseEntity.ok(clinicService.getAllClinics(city, specialtyId)
+                .stream()
                 .map(clinicMapper::toDTO)
-                .collect(Collectors.toList());        
-        return ResponseEntity.ok(dtos);
+                .collect(Collectors.toList()));
     }
 
     // GET /api/clinics/{id}
     @GetMapping("/{id}")
     //@PreAuthorize("hasRole('PUBLIC')")
     public ResponseEntity<ClinicDTO> getClinicById(@PathVariable Long id) {
-        //return ResponseEntity.ok(clinicService.getClinicById(id));
         return ResponseEntity.ok(clinicMapper.toDTO(clinicService.getClinicById(id)));
     }
 
     // GET /api/clinics/{id}/doctors
     @GetMapping("/{id}/doctors")
     //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<Doctor>> getDoctorsByClinic(@PathVariable Long id) {
-        return ResponseEntity.ok(clinicService.getDoctorsByClinicId(id));
+    public ResponseEntity<List<DoctorDTO>> getDoctorsByClinic(@PathVariable Long id) {
+        return ResponseEntity.ok(clinicService.getDoctorsByClinicId(id)
+                .stream()
+                .map(clinicMapper::toDTO)
+                .collect(Collectors.toList()));
     }
 
     // GET /api/clinics/{id}/doctors/{doctorId}
     @GetMapping("/{id}/doctors/{doctorId}")
     //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<Doctor> getDoctorById(
+    public ResponseEntity<DoctorDTO> getDoctorById(
             @PathVariable Long id,
             @PathVariable Long doctorId) {
-        return ResponseEntity.ok(clinicService.getDoctorById(id, doctorId));
+        return ResponseEntity.ok(clinicMapper.toDTO(clinicService.getDoctorById(id, doctorId)));
     }
 
     // GET /api/clinics/{id}/reviews
     @GetMapping("/{id}/reviews")
     //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<Review>> getReviewsByClinic(@PathVariable Long id) {
-        return ResponseEntity.ok(clinicService.getReviewsByClinicId(id));
+    public ResponseEntity<List<ReviewDTO>> getReviewsByClinic(@PathVariable Long id) {
+        return ResponseEntity.ok(clinicService.getReviewsByClinicId(id)
+                .stream()
+                .map(clinicMapper::toDTO)
+                .collect(Collectors.toList()));
     }
 
     // GET /api/clinics/{id}/specialties
     @GetMapping("/{id}/specialties")
     //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<ClinicSpecialty>> getSpecialtiesByClinic(@PathVariable Long id) {
-        return ResponseEntity.ok(clinicService.getSpecialtiesByClinicId(id));
+    public ResponseEntity<List<ClinicSpecialtyDTO>> getSpecialtiesByClinic(@PathVariable Long id) {
+        return ResponseEntity.ok(clinicService.getSpecialtiesByClinicId(id)
+                .stream()
+                .map(clinicMapper::toDTO)
+                .collect(Collectors.toList()));
     }
 
     // POST /api/clinics — ADMIN
