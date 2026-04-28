@@ -1,0 +1,20 @@
+package com.example.projet.mappers;
+
+import com.example.projet.entities.User;
+import com.example.projet.dto.UserDTO;
+import org.springframework.stereotype.Component;
+
+@Component
+public class UserMapper {
+    public UserDTO toDTO(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        dto.setPhone(user.getPhone());
+        dto.setRole(user.getRole());
+        dto.setCreatedAt(user.getCreatedAt());
+        return dto;
+    }
+}
