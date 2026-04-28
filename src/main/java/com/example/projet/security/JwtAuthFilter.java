@@ -12,17 +12,18 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.context.annotation.Lazy;
 
 import java.io.IOException;
 
-@Component
+//@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
 
     public JwtAuthFilter(JwtTokenProvider jwtTokenProvider,
-                         UserDetailsService userDetailsService) {
+                         @Lazy UserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
     }
