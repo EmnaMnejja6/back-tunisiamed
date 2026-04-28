@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.example.projet.entities.Appointment;
 import com.example.projet.entities.Quote;
-import com.example.projet.entities.QuoteStatus;
 import com.example.projet.entities.enums.AppointmentStatus;
+import com.example.projet.entities.enums.QuoteStatus;
 import com.example.projet.repositories.AppointmentRepository;
 import com.example.projet.repositories.QuoteRepository;
 import java.util.List;
