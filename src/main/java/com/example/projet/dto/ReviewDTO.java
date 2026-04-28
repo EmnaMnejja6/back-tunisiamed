@@ -9,4 +9,6 @@ public class ReviewDTO {
     private String comment;
     private Integer rating;
     private LocalDateTime createdAt;
+    private String patientName;
+    private Long clinicId;
 }
