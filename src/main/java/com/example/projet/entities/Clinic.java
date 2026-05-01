@@ -6,12 +6,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.CascadeType;
 
@@ -19,7 +23,6 @@ import jakarta.persistence.CascadeType;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Clinic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,12 +38,19 @@ public class Clinic {
     private Double longitude;
     private String phone;
     private String email;
-    private Integer totalBookings;
+    private String image_url;
+    private Double rating;
+    @CreationTimestamp
     private LocalDateTime createdAt;
+    @ManyToOne
+    @JoinColumn(name = "clinic_admin_id", nullable = false)
+    private User clinicAdmin;
     @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL)
     private List<ClinicSpecialty> clinicSpecialities;
     @OneToMany(mappedBy="clinic")
     private List<Review> reviews;
     @OneToMany(mappedBy="clinic")
-    private List<Quote> quotes;
+    private List<QuoteResponse> quote_responses;
+    @OneToMany(mappedBy="clinic")
+    private List<Doctor> doctors;
 }

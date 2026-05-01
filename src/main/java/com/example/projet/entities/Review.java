@@ -20,24 +20,13 @@ public class Review {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "patient_id", nullable = false)
-    private Patient patient;
-
-    @ManyToOne(optional = false)
     @JoinColumn(name = "clinic_id", nullable = false)
     private Clinic clinic;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "appointment_id", nullable = false)
-    private Appointment appointment;
 
     @Column(nullable = false)
     @Min(1)
     @Max(5)
     private Integer rating;
-
-    @Column(columnDefinition = "TEXT")
-    private String comment;
 
     @CreationTimestamp
     @Column(updatable = false)

@@ -6,7 +6,6 @@ import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
@@ -15,7 +14,6 @@ import jakarta.persistence.Column;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,5 +28,7 @@ public class Doctor {
     @Column(columnDefinition="TEXT")
     private String biography;
     @ManyToOne
-    private ClinicSpecialty clinicSpecialty;
+    private Clinic clinic;
+    @ManyToOne
+    private Specialty specialty;
 }

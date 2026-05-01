@@ -1,20 +1,27 @@
 package com.example.projet.mappers;
 
 import com.example.projet.dto.ClinicDTO;
-import com.example.projet.dto.ClinicSpecialtyDTO;
-import com.example.projet.dto.DoctorDTO;
-import com.example.projet.dto.ReviewDTO;
+import com.example.projet.dto.CreateClinicRequest;
 import com.example.projet.entities.Clinic;
 import com.example.projet.entities.ClinicSpecialty;
-import com.example.projet.entities.Doctor;
-import com.example.projet.entities.Review;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class ClinicMapper {
 
+    @Autowired
+    private SpecialtyMapper specialtyMapper;
+
+    @Autowired
+    private DoctorMapper doctorMapper;
+
     public ClinicDTO toDTO(Clinic clinic) {
+        if (clinic == null) return null;
         ClinicDTO dto = new ClinicDTO();
         dto.setId(clinic.getId());
         dto.setName(clinic.getName());
@@ -25,60 +32,56 @@ public class ClinicMapper {
         dto.setLongitude(clinic.getLongitude());
         dto.setPhone(clinic.getPhone());
         dto.setEmail(clinic.getEmail());
+        dto.setImageUrl(clinic.getImage_url());
+        dto.setRating(clinic.getRating());
+        dto.setCreatedAt(clinic.getCreatedAt());
 
+        if (clinic.getClinicAdmin() != null) {
+            dto.setClinicAdminId(clinic.getClinicAdmin().getId());
+            dto.setClinicAdminName(
+                clinic.getClinicAdmin().getFirstName() + " " + clinic.getClinicAdmin().getLastName()
+            );
+        }
+
+        // Map specialties from ClinicSpecialty join entity
         if (clinic.getClinicSpecialities() != null) {
-            dto.setClinicSpecialities(
+            dto.setSpecialties(
                 clinic.getClinicSpecialities().stream()
-                    .map(this::toDTO)
+                    .map(ClinicSpecialty::getSpecialty)
+                    .map(specialtyMapper::toDTO)
                     .collect(Collectors.toList())
             );
+        } else {
+            dto.setSpecialties(Collections.emptyList());
         }
 
-        if (clinic.getReviews() != null) {
-            dto.setReviews(
-                clinic.getReviews().stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList())
-            );
-        }
-        return dto;
-    }
-
-    public ClinicSpecialtyDTO toDTO(ClinicSpecialty cs) {
-        ClinicSpecialtyDTO dto = new ClinicSpecialtyDTO();
-        dto.setId(cs.getId());
-        dto.setSpecialtyTypeName(cs.getSpecialtyType().getName());
-        dto.setBasePriceEstimate(cs.getBasePriceEstimate());
-        dto.setRecommendedMinDays(cs.getRecommendedMinDays());
-
-        if (cs.getDoctors() != null) {
+        // Map doctors
+        if (clinic.getDoctors() != null) {
             dto.setDoctors(
-                cs.getDoctors().stream()
-                    .map(this::toDTO)
+                clinic.getDoctors().stream()
+                    .map(doctorMapper::toDTO)
                     .collect(Collectors.toList())
             );
+        } else {
+            dto.setDoctors(Collections.emptyList());
         }
+
         return dto;
     }
 
-    public DoctorDTO toDTO(Doctor doctor) {
-        DoctorDTO dto = new DoctorDTO();
-        dto.setId(doctor.getId());
-        dto.setFirstName(doctor.getFirstName());
-        dto.setLastName(doctor.getLastName());
-        dto.setPhotoUrl(doctor.getPhotoUrl());
-        dto.setExperienceYears(doctor.getExperienceYears());
-        dto.setDiploma(doctor.getDiploma());
-        dto.setBiography(doctor.getBiography());
-        return dto;
-    }
-
-    public ReviewDTO toDTO(Review review) {
-        ReviewDTO dto = new ReviewDTO();
-        dto.setId(review.getId());
-        dto.setRating(review.getRating());
-        dto.setComment(review.getComment());
-        dto.setCreatedAt(review.getCreatedAt());
-        return dto;
+    public Clinic toEntity(CreateClinicRequest request) {
+        if (request == null) return null;
+        Clinic clinic = new Clinic();
+        clinic.setName(request.getName());
+        clinic.setDescription(request.getDescription());
+        clinic.setAddress(request.getAddress());
+        clinic.setCity(request.getCity());
+        clinic.setLatitude(request.getLatitude());
+        clinic.setLongitude(request.getLongitude());
+        clinic.setPhone(request.getPhone());
+        clinic.setEmail(request.getEmail());
+        clinic.setImage_url(request.getImageUrl());
+        // clinicAdmin is set in the service using clinicAdminId
+        return clinic;
     }
 }

@@ -1,7 +1,9 @@
 package com.example.projet.dto;
-import java.util.List;
 
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ClinicDTO {
@@ -14,7 +16,13 @@ public class ClinicDTO {
     private Double longitude;
     private String phone;
     private String email;
-    private List<ClinicSpecialtyDTO> clinicSpecialities;
-    private List<ReviewDTO> reviews;
-    
+    private String imageUrl;
+    private Double rating;
+    private LocalDateTime createdAt;
+    // Admin info (no password)
+    private Long clinicAdminId;
+    private String clinicAdminName;
+    // Nested lists
+    private List<SpecialtyDTO> specialties;
+    private List<DoctorDTO> doctors;
 }

@@ -4,16 +4,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 
 import com.example.projet.entities.Clinic;
-import com.example.projet.entities.Doctor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
 public interface ClinicRepository extends JpaRepository<Clinic, Long> {
 
-    public List<Clinic> findByCityAndClinicSpecialitiesSpecialtyTypeId(String city, Long specialtyId);
+    @Query("SELECT c FROM Clinic c JOIN c.clinicSpecialities cs WHERE cs.specialty.id = :specialtyId")
+    public List<Clinic> findBySpecialtyId(@Param("specialtyId") Long specialtyId);
     public List<Clinic> findByCity(String city);
-    public List<Clinic> findByClinicSpecialitiesSpecialtyTypeId(Long specialtyId);
-    @Query("SELECT d FROM Doctor d WHERE d.clinicSpecialty.clinic.id = :clinicId")
-    public List<Doctor> findDoctorsByClinicId(@Param("clinicId") Long clinicId);
+    public List<Clinic> findByClinicAdminId(Long adminId);
+    @Query("SELECT c FROM Clinic c WHERE " +
+            "LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(c.city) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "EXISTS (SELECT cs FROM ClinicSpecialty cs WHERE cs.clinic = c AND LOWER(cs.specialty.label) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    public List<Clinic> searchByKeyword(@Param("keyword") String keyword);
+
+
 }

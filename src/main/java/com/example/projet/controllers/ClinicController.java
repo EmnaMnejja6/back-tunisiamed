@@ -3,6 +3,7 @@ package com.example.projet.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,16 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.projet.entities.Clinic;
-import com.example.projet.entities.ClinicSpecialty;
-import com.example.projet.entities.Doctor;
-import com.example.projet.entities.Review;
 import com.example.projet.services.IClinicService;
 import java.util.List;
 
 import com.example.projet.dto.ClinicDTO;
-import com.example.projet.dto.ClinicSpecialtyDTO;
-import com.example.projet.dto.DoctorDTO;
-import com.example.projet.dto.ReviewDTO;
+import com.example.projet.dto.CreateClinicRequest;
 import com.example.projet.mappers.ClinicMapper;
 
 import java.util.stream.Collectors;
@@ -37,151 +33,86 @@ public class ClinicController {
     @Autowired
     private ClinicMapper clinicMapper;
 
-    // GET /api/clinics?city=Tunis&specialtyId=1
+    // GET /api/clinics
     @GetMapping
-    //@PreAuthorize("hasRole('PUBLIC')")
     public ResponseEntity<List<ClinicDTO>> getAllClinics(
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) Long specialtyId) {
-        return ResponseEntity.ok(clinicService.getAllClinics(city, specialtyId)
-                .stream()
+            @RequestParam(required = false) Long specialtyId,
+            @RequestParam(required = false) String keyword
+    ) {
+        List<Clinic> clinics;
+        if (city != null)            clinics = clinicService.getClinicByCity(city);
+        else if (specialtyId != null) clinics = clinicService.getClinicBySpecialty(specialtyId);
+        else if (keyword != null)     clinics = clinicService.searchByKeyword(keyword);
+        else                          clinics = clinicService.getAllClinics();
+ 
+        List<ClinicDTO> dtos = clinics.stream()
                 .map(clinicMapper::toDTO)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     // GET /api/clinics/{id}
     @GetMapping("/{id}")
-    //@PreAuthorize("hasRole('PUBLIC')")
     public ResponseEntity<ClinicDTO> getClinicById(@PathVariable Long id) {
         return ResponseEntity.ok(clinicMapper.toDTO(clinicService.getClinicById(id)));
     }
 
-    // GET /api/clinics/{id}/doctors
-    @GetMapping("/{id}/doctors")
-    //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<DoctorDTO>> getDoctorsByClinic(@PathVariable Long id) {
-        return ResponseEntity.ok(clinicService.getDoctorsByClinicId(id)
-                .stream()
+    // GET /api/clinics/admin/{adminId}
+    @GetMapping("/admin/{adminId}")
+    public ResponseEntity<List<ClinicDTO>> getByAdmin(@PathVariable Long adminId) {
+        List<ClinicDTO> dtos = clinicService.getClinicByAdminId(adminId).stream()
                 .map(clinicMapper::toDTO)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-    // GET /api/clinics/{id}/doctors/{doctorId}
-    @GetMapping("/{id}/doctors/{doctorId}")
-    //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<DoctorDTO> getDoctorById(
-            @PathVariable Long id,
-            @PathVariable Long doctorId) {
-        return ResponseEntity.ok(clinicMapper.toDTO(clinicService.getDoctorById(id, doctorId)));
-    }
-
-    // GET /api/clinics/{id}/reviews
-    @GetMapping("/{id}/reviews")
-    //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<ReviewDTO>> getReviewsByClinic(@PathVariable Long id) {
-        return ResponseEntity.ok(clinicService.getReviewsByClinicId(id)
-                .stream()
-                .map(clinicMapper::toDTO)
-                .collect(Collectors.toList()));
-    }
-
-    // GET /api/clinics/{id}/specialties
-    @GetMapping("/{id}/specialties")
-    //@PreAuthorize("hasRole('PUBLIC')")
-    public ResponseEntity<List<ClinicSpecialtyDTO>> getSpecialtiesByClinic(@PathVariable Long id) {
-        return ResponseEntity.ok(clinicService.getSpecialtiesByClinicId(id)
-                .stream()
-                .map(clinicMapper::toDTO)
-                .collect(Collectors.toList()));
-    }
-
-    // POST /api/clinics — ADMIN
+    // POST /api/clinics?clinicAdminId=1
     @PostMapping
-    //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> addClinic(@RequestBody Clinic clinic) {
-        clinicService.addClinic(clinic);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<ClinicDTO> create(@RequestBody CreateClinicRequest request) {
+        Clinic clinic = clinicMapper.toEntity(request);
+        Clinic saved = clinicService.createClinic(clinic, request.getClinicAdminId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(clinicMapper.toDTO(saved));
     }
 
-    // PUT /api/clinics/{id} — ADMIN / CLINIC_ADMIN
+    // PUT /api/clinics/{id}
     @PutMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN') or hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<Void> updateClinic(
+    public ResponseEntity<ClinicDTO> update(
             @PathVariable Long id,
-            @RequestBody Clinic clinic) {       
-        clinicService.updateClinic(id, clinic);
-        return ResponseEntity.ok().build();
+            @RequestBody CreateClinicRequest request
+    ) {
+        Clinic clinic = clinicMapper.toEntity(request);
+        return ResponseEntity.ok(clinicMapper.toDTO(clinicService.updateClinic(id, clinic)));
     }
 
-    // DELETE /api/clinics/{id} — ADMIN
+    // DELETE /api/clinics/{id}
     @DeleteMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteClinic(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         clinicService.deleteClinic(id);
         return ResponseEntity.noContent().build();
     }
 
-    // POST /api/clinics/{id}/doctors — CLINIC_ADMIN
-    @PostMapping("/{id}/doctors")
-    //@PreAuthorize("hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<Void> addDoctor(
-            @PathVariable Long id,
-            @RequestBody Doctor doctor) {
-        clinicService.addDoctor(id, doctor);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    // POST /api/clinics/{clinicId}/specialties/{specialtyId}
+    @PreAuthorize("hasRole('CLINIC_ADMIN')") 
+    @PostMapping("/{clinicId}/specialties/{specialtyId}")
+    public ResponseEntity<ClinicDTO> addSpecialty(
+            @PathVariable Long clinicId,
+            @PathVariable Long specialtyId
+    ) {
+        return ResponseEntity.ok(clinicMapper.toDTO(clinicService.addSpecialty(clinicId, specialtyId)));
     }
 
-    // PUT /api/clinics/{id}/doctors/{doctorId} — CLINIC_ADMIN
-    @PutMapping("/{id}/doctors/{doctorId}")
-    //@PreAuthorize("hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<Void> updateDoctor(
-            @PathVariable Long id,
-            @PathVariable Long doctorId,
-            @RequestBody Doctor doctor) {
-        clinicService.updateDoctor(id, doctorId, doctor);
-        return ResponseEntity.ok().build();
-    }
-
-    // DELETE /api/clinics/{id}/doctors/{doctorId} — CLINIC_ADMIN
-    @DeleteMapping("/{id}/doctors/{doctorId}")
-    //@PreAuthorize("hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<Void> deleteDoctor(
-            @PathVariable Long id,
-            @PathVariable Long doctorId) {
-        clinicService.deleteDoctor(id, doctorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    // POST /api/clinics/{id}/specialties — CLINIC_ADMIN
-    @PostMapping("/{id}/specialties")
-    //@PreAuthorize("hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<Void> addSpecialty(
-            @PathVariable Long id,
-            @RequestParam Long specialtyTypeId,
-            @RequestBody ClinicSpecialty clinicSpecialty) {
-        clinicService.addSpecialtyToClinic(id, specialtyTypeId, clinicSpecialty);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    // PUT /api/clinics/{id}/specialties/{csId} — CLINIC_ADMIN
-    @PutMapping("/{id}/specialties/{csId}")
-    //@PreAuthorize("hasRole('CLINIC_ADMIN')")
-    public ResponseEntity<Void> updateSpecialty(
-            @PathVariable Long id,
-            @PathVariable Long csId,
-            @RequestBody ClinicSpecialty clinicSpecialty) {
-        clinicService.updateClinicSpecialty(id, csId, clinicSpecialty);
-        return ResponseEntity.ok().build();
-    }
-
-    // DELETE /api/clinics/{id}/specialties/{csId} — CLINIC_ADMIN
-    @DeleteMapping("/{id}/specialties/{csId}")
-    //@PreAuthorize("hasRole('CLINIC_ADMIN')")
+    // DELETE /api/clinics/{clinicId}/specialties/{specialtyId}
+    @PreAuthorize("hasRole('CLINIC_ADMIN')")
+    @DeleteMapping("/{clinicId}/specialties/{specialtyId}")
     public ResponseEntity<Void> removeSpecialty(
-            @PathVariable Long id,
-            @PathVariable Long csId) {
-        clinicService.removeSpecialtyFromClinic(id, csId);
+            @PathVariable Long clinicId,
+            @PathVariable Long specialtyId
+    ) {
+        clinicService.removeSpecialty(clinicId, specialtyId);
         return ResponseEntity.noContent().build();
     }
+
+
     
 }

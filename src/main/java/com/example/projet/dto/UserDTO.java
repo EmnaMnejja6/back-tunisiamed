@@ -1,8 +1,9 @@
 package com.example.projet.dto;
 
-import java.time.LocalDateTime;
 import com.example.projet.entities.enums.Role;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class UserDTO {

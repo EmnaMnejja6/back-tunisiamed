@@ -2,6 +2,7 @@ package com.example.projet.dto;
 
 import lombok.Data;
 
+
 @Data
 public class DoctorDTO {
     private Long id;
@@ -11,4 +12,7 @@ public class DoctorDTO {
     private Integer experienceYears;
     private String diploma;
     private String biography;
+    private Long clinicId;
+    private String clinicName;
+    private SpecialtyDTO specialty;
 }
