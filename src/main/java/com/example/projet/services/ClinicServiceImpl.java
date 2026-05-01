@@ -2,7 +2,6 @@ package com.example.projet.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.projet.entities.Clinic;
 import com.example.projet.entities.ClinicSpecialty;
@@ -16,9 +15,7 @@ import com.example.projet.repositories.ReviewRepository;
 import com.example.projet.entities.User;
 import com.example.projet.entities.enums.Role;
 import com.example.projet.repositories.UserRepository;
-
-import jakarta.persistence.EntityNotFoundException;
-
+import jakarta.transaction.Transactional;
 
 @Service
 public class ClinicServiceImpl implements IClinicService {
@@ -64,7 +61,7 @@ public class ClinicServiceImpl implements IClinicService {
 
     public Clinic createClinic(Clinic clinic, Long adminId) {
 
-        User admin = userRepository.findById(adminId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User admin = userRepository.findById(adminId).orElseThrow(() -> new RuntimeException("Admin user not found"));
 
         if (admin.getRole() != Role.CLINIC_ADMIN) {
             throw new IllegalArgumentException("User is not a clinic admin");
