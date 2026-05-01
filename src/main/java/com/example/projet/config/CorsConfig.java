@@ -19,8 +19,11 @@ public class CorsConfig {
         // Angular dev server origin — add prod URL when deploying
         configuration.setAllowedOrigins(List.of(
             "http://localhost:4200",
+            "http://localhost:8081",
             "https://your-production-domain.com"  // replace in prod
         ));
+        //accepte tous les origines
+        //configuration.setAllowedOriginPatterns(List.of("*"));
 
         // Allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList(

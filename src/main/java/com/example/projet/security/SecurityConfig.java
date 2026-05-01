@@ -75,11 +75,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/clinics").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/clinics/**").hasAnyRole("ADMIN", "CLINIC_ADMIN")
 
-                // ✅ Specialty association — permit authenticated, @PreAuthorize gère le rôle
+                // Specialty association — permit authenticated, @PreAuthorize gère le rôle
                 .requestMatchers(HttpMethod.POST, "/api/clinics/*/specialties/*").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/clinics/*/specialties/*").authenticated()
 
-                // ✅ Delete clinique seulement — ADMIN
+                // Delete clinique seulement — ADMIN
                 .requestMatchers(HttpMethod.DELETE, "/api/clinics/**").authenticated()
 
                 // DOCTORS
