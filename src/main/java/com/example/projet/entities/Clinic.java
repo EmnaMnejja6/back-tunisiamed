@@ -44,7 +44,7 @@ public class Clinic {
     private LocalDateTime createdAt;
     @ManyToOne
     @JoinColumn(name = "clinic_admin_id", nullable = false)
-    private User clinicAdmin;
+    private ClinicAdmin clinicAdmin;
     @OneToMany(mappedBy = "clinic", cascade = CascadeType.ALL)
     private List<ClinicSpecialty> clinicSpecialities;
     @OneToMany(mappedBy="clinic")

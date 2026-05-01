@@ -17,6 +17,8 @@ import com.example.projet.entities.User;
 import com.example.projet.entities.enums.Role;
 import com.example.projet.repositories.UserRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 
 @Service
 public class ClinicServiceImpl implements IClinicService {
@@ -62,7 +64,7 @@ public class ClinicServiceImpl implements IClinicService {
 
     public Clinic createClinic(Clinic clinic, Long adminId) {
 
-        User admin = userRepository.findById(adminId).orElse(null);
+        User admin = userRepository.findById(adminId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         if (admin.getRole() != Role.CLINIC_ADMIN) {
             throw new IllegalArgumentException("User is not a clinic admin");
