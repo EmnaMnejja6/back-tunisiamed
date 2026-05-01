@@ -1,7 +1,5 @@
 package com.example.projet.entities;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import lombok.AllArgsConstructor;
