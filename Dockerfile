@@ -1,7 +1,7 @@
 # Use official OpenJDK 17 image
 FROM eclipse-temurin:17-jdk
 # Copy jar into container
-COPY target/backend-0.0.1-SNAPSHOT.jar app.jar
+COPY target/projet-0.0.1-SNAPSHOT.jar app.jar
 # Expose port 8080
 EXPOSE 8080
 # Run the jar
