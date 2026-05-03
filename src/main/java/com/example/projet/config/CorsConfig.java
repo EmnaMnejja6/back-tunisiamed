@@ -20,7 +20,7 @@ public class CorsConfig {
         configuration.setAllowedOrigins(List.of(
             "http://localhost:4200",
             "http://localhost:8081",
-            "https://emnamnejja6.github.io/front-tunisiamed" 
+            "https://emnamnejja6.github.io" 
         ));
         //accepte tous les origines
         //configuration.setAllowedOriginPatterns(List.of("*"));
