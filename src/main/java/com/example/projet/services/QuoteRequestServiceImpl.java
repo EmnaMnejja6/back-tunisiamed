@@ -24,6 +24,7 @@ public class QuoteRequestServiceImpl implements IQuoteRequestService {
         quoteRequest.setSpecialty(specialty);
         quoteRequest.setStatus(QuoteStatus.PENDING);
         quoteRequest.setToken(UUID.randomUUID().toString());
+        quoteRequest.setCreatedAt(java.time.LocalDateTime.now());
         return quoteRequestRepository.save(quoteRequest);        
 
     }
@@ -32,7 +33,8 @@ public class QuoteRequestServiceImpl implements IQuoteRequestService {
                 .orElseThrow(() -> new RuntimeException("Quote request not found with id: " + id));
     }
     public QuoteRequest getQuoteRequestByToken(String token){
-        return quoteRequestRepository.findByToken(token);
+        return quoteRequestRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Quote request not found with token: " + token));
     }
     public List<QuoteRequest> getQuoteRequests(){
         return quoteRequestRepository.findAll();

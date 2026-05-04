@@ -51,8 +51,10 @@ public class QuoteResponseController {
     }
     // GET /api/quote-responses/token/{token}
     @GetMapping("/token/{token}")
-    public ResponseEntity<QuoteResponseDTO> getByToken(@PathVariable String token) {
-        return ResponseEntity.ok(quoteResponseMapper.toDTO(quoteResponseService.getQuoteResponseByToken(token)));
+    public ResponseEntity<List<QuoteResponseDTO>> getByToken(@PathVariable String token) {
+        List<QuoteResponseDTO> dtos = quoteResponseService.getQuoteResponseByToken(token)
+                .stream().map(quoteResponseMapper::toDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
     // GET /api/quote-responses/{id}
     @GetMapping("/{id}")
