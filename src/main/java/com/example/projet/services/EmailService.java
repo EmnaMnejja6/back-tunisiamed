@@ -4,12 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
@@ -23,8 +28,11 @@ public class EmailService {
     /**
      * Send confirmation email when a quote request is created
      */
+    @Async
     public void sendQuoteRequestConfirmation(String toEmail, String firstName, String lastName, String token) {
         try {
+            logger.info("Sending quote request confirmation email to: {}", toEmail);
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -73,17 +81,23 @@ public class EmailService {
 
             helper.setText(htmlContent, true);
             mailSender.send(message);
+            
+            logger.info("Quote request confirmation email sent successfully to: {}", toEmail);
 
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send email", e);
+            logger.error("Failed to send quote request confirmation email to: {}", toEmail, e);
+            // Don't throw exception - we don't want email failures to break the quote creation
         }
     }
 
     /**
      * Send notification email when a new offer is received
      */
+    @Async
     public void sendNewOfferNotification(String toEmail, String firstName, String lastName, String clinicName, String token) {
         try {
+            logger.info("Sending new offer notification email to: {}", toEmail);
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -132,9 +146,12 @@ public class EmailService {
 
             helper.setText(htmlContent, true);
             mailSender.send(message);
+            
+            logger.info("New offer notification email sent successfully to: {}", toEmail);
 
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send email", e);
+            logger.error("Failed to send new offer notification email to: {}", toEmail, e);
+            // Don't throw exception - we don't want email failures to break the offer creation
         }
     }
 }
