@@ -33,15 +33,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
-            // 1. Désactiver CSRF (API stateless JWT)
+            // 1. Disable CSRF (stateless JWT API)
             .csrf(csrf -> csrf.disable())
-            // 2. Pas de session HTTP (JWT gère l'auth)
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            // 3. Règles d'autorisation par endpoint
+            // 2. Stateless session policy
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // 3. Authorization rules
             .authorizeHttpRequests(auth -> auth
-                // OPTIONS preflight (CORS)
+                .requestMatchers("/error").permitAll()  
+
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // Swagger
@@ -69,10 +68,10 @@ public class SecurityConfig {
                 // CLINICS
                 .requestMatchers(HttpMethod.POST, "/api/clinics").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/clinics/**").hasAnyRole("ADMIN", "CLINIC_ADMIN")
-                // Specialty association — permit authenticated, @PreAuthorize gère le rôle
+                // Specialty association — @PreAuthorize handles role granularity
                 .requestMatchers(HttpMethod.POST, "/api/clinics/*/specialties/*").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/clinics/*/specialties/*").authenticated()
-                // Delete clinique seulement — ADMIN
+                // Delete clinic — ADMIN only
                 .requestMatchers(HttpMethod.DELETE, "/api/clinics/**").authenticated()
 
                 // DOCTORS
@@ -89,23 +88,22 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").hasRole("ADMIN")
 
-                // QUOTE REQUEST (PATIENT)
-                .requestMatchers(HttpMethod.POST, "/api/quote-requests").permitAll() // public (client externe)
+                // QUOTE REQUESTS (PATIENT)
+                .requestMatchers(HttpMethod.POST, "/api/quote-requests").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/quote-requests/**").hasAnyRole("ADMIN", "CLINIC_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/quote-requests/**").hasAnyRole("ADMIN", "CLINIC_ADMIN")
 
-                // QUOTE RESPONSE (CLINIC)
-                // IMPORTANT: More specific pattern MUST come before general pattern
-                .requestMatchers(HttpMethod.GET, "/api/quote-responses/token/**").permitAll() // Public access for quote requesters
+                // QUOTE RESPONSES — token/** must be explicitly before /**
+                .requestMatchers(HttpMethod.GET, "/api/quote-responses/token/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/quote-responses/token/*").permitAll()  // belt & suspenders
                 .requestMatchers(HttpMethod.POST, "/api/quote-responses").hasRole("CLINIC_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/quote-responses/*/view").hasRole("CLINIC_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/quote-responses/*/accept").hasRole("CLINIC_ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/quote-responses/**").hasAnyRole("CLINIC_ADMIN", "ADMIN")
-
-                // Tout le reste → authentifié
-                .anyRequest().authenticated()
-            )
-            // 4. Ajouter le filtre JWT
+                                // Everything else → must be authenticated
+                                .anyRequest().authenticated()
+                            )
+            // 4. Add JWT filter before username/password filter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

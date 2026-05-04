@@ -2,7 +2,8 @@ package com.example.projet.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import com.example.projet.entities.Clinic;
 import com.example.projet.entities.QuoteRequest;
 import com.example.projet.entities.QuoteResponse;
@@ -70,10 +71,10 @@ public class QuoteResponseServiceImpl implements IQuoteResponseService {
     public List<QuoteResponse> getQuoteResponsesByClinicAndStatus(Long clinicId, QuoteStatus status){
         return quoteResponseRepository.findByClinicIdAndStatus(clinicId, status);
     }
-
-    public QuoteResponse getQuoteResponseByToken(String token){
-        return quoteResponseRepository.findByToken(token)
-                .orElseThrow(() -> new EntityNotFoundException("QuoteResponse not found with token: " + token));
-    }
-
+public QuoteResponse getQuoteResponseByToken(String token) {
+    return quoteResponseRepository.findByToken(token)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "QuoteResponse not found with token: " + token
+            ));
+}
 }
