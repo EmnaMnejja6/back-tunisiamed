@@ -29,13 +29,25 @@ public class QuoteRequestServiceImpl implements IQuoteRequestService {
         quoteRequest.setCreatedAt(java.time.LocalDateTime.now());
         QuoteRequest saved = quoteRequestRepository.save(quoteRequest);
         
+        // Log before calling email service
+        System.out.println("=== ABOUT TO SEND EMAIL ===");
+        System.out.println("Email: " + saved.getEmail());
+        System.out.println("Token: " + saved.getToken());
+        System.out.println("EmailService bean: " + (emailService != null ? "PRESENT" : "NULL"));
+        
         // Send confirmation email with link to view offers
-        emailService.sendQuoteRequestConfirmation(
-            saved.getEmail(),
-            saved.getFname(),
-            saved.getLname(),
-            saved.getToken()
-        );
+        try {
+            emailService.sendQuoteRequestConfirmation(
+                saved.getEmail(),
+                saved.getFname(),
+                saved.getLname(),
+                saved.getToken()
+            );
+            System.out.println("=== EMAIL SERVICE CALLED ===");
+        } catch (Exception e) {
+            System.err.println("=== EMAIL SERVICE FAILED: " + e.getMessage() + " ===");
+            e.printStackTrace();
+        }
         
         return saved;        
 

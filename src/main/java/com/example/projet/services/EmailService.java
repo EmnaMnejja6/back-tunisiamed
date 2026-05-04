@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
+imporemna.mnejja1808@gmail.comt org.springframework.stereotype.Service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -28,10 +28,28 @@ public class EmailService {
     /**
      * Send confirmation email when a quote request is created
      */
-    @Async
+    @Async("taskExecutor")
     public void sendQuoteRequestConfirmation(String toEmail, String firstName, String lastName, String token) {
+        System.out.println("=== EMAIL METHOD ENTERED ===");
+        System.out.println("Thread: " + Thread.currentThread().getName());
+        System.out.println("To: " + toEmail);
+        
         try {
-            logger.info("Sending quote request confirmation email to: {}", toEmail);
+            logger.info("Starting to send quote request confirmation email to: {} (Thread: {})", 
+                toEmail, Thread.currentThread().getName());
+            logger.debug("Email config - From: {}, Frontend URL: {}", fromEmail, frontendUrl);
+            
+            if (mailSender == null) {
+                logger.error("CRITICAL: mailSender is NULL!");
+                System.err.println("=== MAIL SENDER IS NULL ===");
+                return;
+            }
+            
+            if (fromEmail == null || fromEmail.isEmpty()) {
+                logger.error("CRITICAL: fromEmail is not configured!");
+                System.err.println("=== FROM EMAIL NOT CONFIGURED ===");
+                return;
+            }
             
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -41,6 +59,7 @@ public class EmailService {
             helper.setSubject("Your Quote Request - TunisiaMed");
 
             String viewOffersUrl = frontendUrl + "/view-offers?token=" + token;
+            logger.debug("View offers URL: {}", viewOffersUrl);
 
             String htmlContent = String.format("""
                 <!DOCTYPE html>
@@ -80,23 +99,35 @@ public class EmailService {
                 """, firstName, lastName, viewOffersUrl, viewOffersUrl, viewOffersUrl);
 
             helper.setText(htmlContent, true);
-            mailSender.send(message);
             
-            logger.info("Quote request confirmation email sent successfully to: {}", toEmail);
+            logger.info("Attempting to send email via SMTP...");
+            System.out.println("=== CALLING MAIL SENDER ===");
+            mailSender.send(message);
+            System.out.println("=== MAIL SENDER RETURNED ===");
+            
+            logger.info("✓ Quote request confirmation email sent successfully to: {}", toEmail);
 
         } catch (MessagingException e) {
-            logger.error("Failed to send quote request confirmation email to: {}", toEmail, e);
-            // Don't throw exception - we don't want email failures to break the quote creation
+            logger.error("✗ Failed to send quote request confirmation email to: {} - Error: {}", 
+                toEmail, e.getMessage(), e);
+            System.err.println("=== MESSAGING EXCEPTION: " + e.getMessage() + " ===");
+            e.printStackTrace();
+        } catch (Exception e) {
+            logger.error("✗ Unexpected error sending email to: {} - Error: {}", 
+                toEmail, e.getMessage(), e);
+            System.err.println("=== UNEXPECTED EXCEPTION: " + e.getMessage() + " ===");
+            e.printStackTrace();
         }
     }
 
     /**
      * Send notification email when a new offer is received
      */
-    @Async
+    @Async("taskExecutor")
     public void sendNewOfferNotification(String toEmail, String firstName, String lastName, String clinicName, String token) {
         try {
-            logger.info("Sending new offer notification email to: {}", toEmail);
+            logger.info("Starting to send new offer notification email to: {} (Thread: {})", 
+                toEmail, Thread.currentThread().getName());
             
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -145,13 +176,18 @@ public class EmailService {
                 """, firstName, lastName, clinicName, viewOffersUrl);
 
             helper.setText(htmlContent, true);
+            
+            logger.info("Attempting to send email via SMTP...");
             mailSender.send(message);
             
-            logger.info("New offer notification email sent successfully to: {}", toEmail);
+            logger.info("✓ New offer notification email sent successfully to: {}", toEmail);
 
         } catch (MessagingException e) {
-            logger.error("Failed to send new offer notification email to: {}", toEmail, e);
-            // Don't throw exception - we don't want email failures to break the offer creation
+            logger.error("✗ Failed to send new offer notification email to: {} - Error: {}", 
+                toEmail, e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("✗ Unexpected error sending email to: {} - Error: {}", 
+                toEmail, e.getMessage(), e);
         }
     }
 }
