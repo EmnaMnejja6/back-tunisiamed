@@ -13,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import com.example.projet.config.CorsConfig;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -36,15 +35,12 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
             // 1. Désactiver CSRF (API stateless JWT)
             .csrf(csrf -> csrf.disable())
-
             // 2. Pas de session HTTP (JWT gère l'auth)
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-
             // 3. Règles d'autorisation par endpoint
             .authorizeHttpRequests(auth -> auth
-
                 // OPTIONS preflight (CORS)
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
@@ -53,16 +49,14 @@ public class SecurityConfig {
 
                 // Auth publique
                 .requestMatchers("/api/auth/**").permitAll()
-               
 
-                // Lecture publique 
+                // Lecture publique
                 .requestMatchers(HttpMethod.GET,
-                "/api/clinics/**",
-                "/api/doctors/**",
-                "/api/specialties/**",
-                "/api/reviews/clinic/**",
-                "/api/quote-requests/token/**",
-                "/api/quote-responses/token/**"
+                    "/api/clinics/**",
+                    "/api/doctors/**",
+                    "/api/specialties/**",
+                    "/api/reviews/clinic/**",
+                    "/api/quote-requests/token/**"
                 ).permitAll()
 
                 // USERS (ADMIN ONLY)
@@ -75,11 +69,9 @@ public class SecurityConfig {
                 // CLINICS
                 .requestMatchers(HttpMethod.POST, "/api/clinics").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/clinics/**").hasAnyRole("ADMIN", "CLINIC_ADMIN")
-
                 // Specialty association — permit authenticated, @PreAuthorize gère le rôle
                 .requestMatchers(HttpMethod.POST, "/api/clinics/*/specialties/*").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/clinics/*/specialties/*").authenticated()
-
                 // Delete clinique seulement — ADMIN
                 .requestMatchers(HttpMethod.DELETE, "/api/clinics/**").authenticated()
 
@@ -94,7 +86,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/specialties/**").hasRole("ADMIN")
 
                 // REVIEWS
-                .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll() 
+                .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").hasRole("ADMIN")
 
                 // QUOTE REQUEST (PATIENT)
@@ -103,17 +95,16 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/quote-requests/**").hasAnyRole("ADMIN", "CLINIC_ADMIN")
 
                 // QUOTE RESPONSE (CLINIC)
+                // IMPORTANT: More specific pattern MUST come before general pattern
+                .requestMatchers(HttpMethod.GET, "/api/quote-responses/token/**").permitAll() // Public access for quote requesters
                 .requestMatchers(HttpMethod.POST, "/api/quote-responses").hasRole("CLINIC_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/quote-responses/*/view").hasRole("CLINIC_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/quote-responses/*/accept").hasRole("CLINIC_ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/quote-responses/**").hasAnyRole("CLINIC_ADMIN", "ADMIN")                
-
+                .requestMatchers(HttpMethod.GET, "/api/quote-responses/**").hasAnyRole("CLINIC_ADMIN", "ADMIN")
 
                 // Tout le reste → authentifié
                 .anyRequest().authenticated()
-                //.anyRequest().permitAll()
-                )
-
+            )
             // 4. Ajouter le filtre JWT
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -121,8 +112,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
