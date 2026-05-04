@@ -26,6 +26,9 @@ public class QuoteResponseServiceImpl implements IQuoteResponseService {
     @Autowired
     private ClinicRepository clinicRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public QuoteResponse respond(Long quoteRequestId, Long clinicId, QuoteResponse response) {
         if (quoteResponseRepository.existsByQuoteRequestIdAndClinicId(quoteRequestId, clinicId)) {
             throw new IllegalArgumentException("This clinic already responded to this request");
@@ -45,6 +48,15 @@ public class QuoteResponseServiceImpl implements IQuoteResponseService {
 
         quoteRequest.setStatus(QuoteStatus.RESPONDED);
         quoteRequestRepository.save(quoteRequest);
+
+        // Send new offer notification email
+        emailService.sendNewOfferNotification(
+            quoteRequest.getEmail(),
+            quoteRequest.getFname(),
+            quoteRequest.getLname(),
+            clinic.getName(),
+            quoteRequest.getToken()
+        );
 
         return saved;
     }

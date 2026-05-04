@@ -17,6 +17,8 @@ public class QuoteRequestServiceImpl implements IQuoteRequestService {
     private QuoteRequestRepository quoteRequestRepository;
     @Autowired
     private SpecialtyRepository specialtyRepository;
+    @Autowired
+    private EmailService emailService;
 
     public QuoteRequest submit(QuoteRequest quoteRequest, Long specialtyId){
         Specialty specialty = specialtyRepository.findById(specialtyId)
@@ -25,7 +27,17 @@ public class QuoteRequestServiceImpl implements IQuoteRequestService {
         quoteRequest.setStatus(QuoteStatus.PENDING);
         quoteRequest.setToken(UUID.randomUUID().toString());
         quoteRequest.setCreatedAt(java.time.LocalDateTime.now());
-        return quoteRequestRepository.save(quoteRequest);        
+        QuoteRequest saved = quoteRequestRepository.save(quoteRequest);
+        
+        // Send confirmation email with link to view offers
+        emailService.sendQuoteRequestConfirmation(
+            saved.getEmail(),
+            saved.getFname(),
+            saved.getLname(),
+            saved.getToken()
+        );
+        
+        return saved;        
 
     }
     public QuoteRequest getQuoteRequestById(Long id){
@@ -48,7 +60,7 @@ public class QuoteRequestServiceImpl implements IQuoteRequestService {
         qr.setStatus(status);
         return quoteRequestRepository.save(qr);
     }
-    public void close(Long id){
+    public void close(Long id){ 
         QuoteRequest qr = quoteRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Quote request not found with id: " + id));
         qr.setStatus(QuoteStatus.CLOSED);
