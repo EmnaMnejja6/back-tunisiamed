@@ -97,9 +97,7 @@ public class QuoteResponseServiceImpl implements IQuoteResponseService {
         return quoteResponseRepository.findByClinicIdAndStatus(clinicId, status);
     }
 
-    // FIXED: This method now looks for token in quote_request table, not quote_response table
     public List<QuoteResponse> getQuoteResponseByToken(String token) {
-        // 1. Find the QuoteRequest by token (token is in quote_request table)
         QuoteRequest quoteRequest = quoteRequestRepository.findByToken(token)
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, 
