@@ -12,4 +12,5 @@ public interface IQuoteResponseService {
     public QuoteResponse markAsViewed(Long id);
     public QuoteResponse accept(Long id);
     public List<QuoteResponse> getQuoteResponsesByClinicAndStatus(Long clinicId, QuoteStatus status);
+    public QuoteResponse getQuoteResponseByToken(String token);
 }

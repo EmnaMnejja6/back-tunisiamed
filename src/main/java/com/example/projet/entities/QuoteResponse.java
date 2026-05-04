@@ -36,4 +36,7 @@ public class QuoteResponse {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column(unique = true)
+    private String token;
+
 }

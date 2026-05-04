@@ -71,4 +71,9 @@ public class QuoteResponseServiceImpl implements IQuoteResponseService {
         return quoteResponseRepository.findByClinicIdAndStatus(clinicId, status);
     }
 
+    public QuoteResponse getQuoteResponseByToken(String token){
+        return quoteResponseRepository.findByToken(token)
+                .orElseThrow(() -> new EntityNotFoundException("QuoteResponse not found with token: " + token));
+    }
+
 }
