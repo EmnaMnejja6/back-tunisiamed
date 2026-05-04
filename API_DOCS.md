@@ -600,6 +600,13 @@ Get quote response by ID.
 
 ---
 
+### GET `/api/quote-responses/token/{token}`
+Get quote response by token.
+
+**Response:** QuoteResponseDTO
+
+---
+
 ### POST `/api/quote-responses`
 Submit a quote response from a clinic.
 
@@ -687,7 +694,7 @@ Delete a review by ID.
 
 ## Summary
 
-Total Endpoints: **45**
+Total Endpoints: **46**
 
 - Authentication: 4 endpoints
 - Users: 7 endpoints
@@ -695,5 +702,5 @@ Total Endpoints: **45**
 - Doctors: 5 endpoints
 - Specialties: 5 endpoints
 - Quote Requests: 6 endpoints
-- Quote Responses: 6 endpoints
+- Quote Responses: 7 endpoints
 - Reviews: 4 endpoints

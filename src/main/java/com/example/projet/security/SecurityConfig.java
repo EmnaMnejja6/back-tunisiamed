@@ -61,7 +61,8 @@ public class SecurityConfig {
                 "/api/doctors/**",
                 "/api/specialties/**",
                 "/api/reviews/clinic/**",
-                "/api/quote-requests/token/**"
+                "/api/quote-requests/token/**",
+                "/api/quote-responses/token/**"
                 ).permitAll()
 
                 // USERS (ADMIN ONLY)
