@@ -1,29 +1,32 @@
 package com.example.projet.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import org.springframework.web.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.List;
 
 @Service
 public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+    private static final String RESEND_API_URL = "https://api.resend.com/emails";
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${resend.api.key}")
+    private String resendApiKey;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    private final RestClient restClient;
+
+    public EmailService() {
+        this.restClient = RestClient.create();
+    }
 
     /**
      * Send confirmation email when a quote request is created
@@ -37,26 +40,12 @@ public class EmailService {
         try {
             logger.info("Starting to send quote request confirmation email to: {} (Thread: {})", 
                 toEmail, Thread.currentThread().getName());
-            logger.debug("Email config - From: {}, Frontend URL: {}", fromEmail, frontendUrl);
             
-            if (mailSender == null) {
-                logger.error("CRITICAL: mailSender is NULL!");
-                System.err.println("=== MAIL SENDER IS NULL ===");
+            if (resendApiKey == null || resendApiKey.isEmpty()) {
+                logger.error("CRITICAL: Resend API key is not configured!");
+                System.err.println("=== RESEND API KEY NOT CONFIGURED ===");
                 return;
             }
-            
-            if (fromEmail == null || fromEmail.isEmpty()) {
-                logger.error("CRITICAL: fromEmail is not configured!");
-                System.err.println("=== FROM EMAIL NOT CONFIGURED ===");
-                return;
-            }
-            
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Your Quote Request - TunisiaMed");
 
             String viewOffersUrl = frontendUrl + "/view-offers?token=" + token;
             logger.debug("View offers URL: {}", viewOffersUrl);
@@ -98,20 +87,27 @@ public class EmailService {
                 </html>
                 """, firstName, lastName, viewOffersUrl, viewOffersUrl, viewOffersUrl);
 
-            helper.setText(htmlContent, true);
-            
-            logger.info("Attempting to send email via SMTP...");
-            System.out.println("=== CALLING MAIL SENDER ===");
-            mailSender.send(message);
-            System.out.println("=== MAIL SENDER RETURNED ===");
-            
-            logger.info("✓ Quote request confirmation email sent successfully to: {}", toEmail);
+            Map<String, Object> emailRequest = Map.of(
+                "from", "TunisiaMed <onboarding@resend.dev>",
+                "to", List.of(toEmail),
+                "subject", "Your Quote Request - TunisiaMed",
+                "html", htmlContent
+            );
 
-        } catch (MessagingException e) {
-            logger.error("✗ Failed to send quote request confirmation email to: {} - Error: {}", 
-                toEmail, e.getMessage(), e);
-            System.err.println("=== MESSAGING EXCEPTION: " + e.getMessage() + " ===");
-            e.printStackTrace();
+            logger.info("Attempting to send email via Resend API...");
+            System.out.println("=== CALLING RESEND API ===");
+            
+            String response = restClient.post()
+                .uri(RESEND_API_URL)
+                .header("Authorization", "Bearer " + resendApiKey)
+                .header("Content-Type", "application/json")
+                .body(emailRequest)
+                .retrieve()
+                .body(String.class);
+            
+            System.out.println("=== RESEND API RETURNED ===");
+            logger.info("✓ Quote request confirmation email sent successfully to: {} - Response: {}", toEmail, response);
+
         } catch (Exception e) {
             logger.error("✗ Unexpected error sending email to: {} - Error: {}", 
                 toEmail, e.getMessage(), e);
@@ -129,12 +125,10 @@ public class EmailService {
             logger.info("Starting to send new offer notification email to: {} (Thread: {})", 
                 toEmail, Thread.currentThread().getName());
             
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("New Offer Received - TunisiaMed");
+            if (resendApiKey == null || resendApiKey.isEmpty()) {
+                logger.error("CRITICAL: Resend API key is not configured!");
+                return;
+            }
 
             String viewOffersUrl = frontendUrl + "/view-offers?token=" + token;
 
@@ -175,16 +169,25 @@ public class EmailService {
                 </html>
                 """, firstName, lastName, clinicName, viewOffersUrl);
 
-            helper.setText(htmlContent, true);
-            
-            logger.info("Attempting to send email via SMTP...");
-            mailSender.send(message);
-            
-            logger.info("✓ New offer notification email sent successfully to: {}", toEmail);
+            Map<String, Object> emailRequest = Map.of(
+                "from", "TunisiaMed <onboarding@resend.dev>",
+                "to", List.of(toEmail),
+                "subject", "New Offer Received - TunisiaMed",
+                "html", htmlContent
+            );
 
-        } catch (MessagingException e) {
-            logger.error("✗ Failed to send new offer notification email to: {} - Error: {}", 
-                toEmail, e.getMessage(), e);
+            logger.info("Attempting to send email via Resend API...");
+            
+            String response = restClient.post()
+                .uri(RESEND_API_URL)
+                .header("Authorization", "Bearer " + resendApiKey)
+                .header("Content-Type", "application/json")
+                .body(emailRequest)
+                .retrieve()
+                .body(String.class);
+            
+            logger.info("✓ New offer notification email sent successfully to: {} - Response: {}", toEmail, response);
+
         } catch (Exception e) {
             logger.error("✗ Unexpected error sending email to: {} - Error: {}", 
                 toEmail, e.getMessage(), e);
