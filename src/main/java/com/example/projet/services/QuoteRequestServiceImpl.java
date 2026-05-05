@@ -75,7 +75,6 @@ public class QuoteRequestServiceImpl implements IQuoteRequestService {
     public void close(Long id){ 
         QuoteRequest qr = quoteRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Quote request not found with id: " + id));
-        qr.setStatus(QuoteStatus.CLOSED);
         quoteRequestRepository.save(qr);
     }
 

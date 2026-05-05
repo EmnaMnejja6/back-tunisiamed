@@ -42,7 +42,6 @@ public class QuoteResponseServiceImpl implements IQuoteResponseService {
 
         response.setQuoteRequest(quoteRequest);
         response.setClinic(clinic);
-        response.setStatus(QuoteStatus.SENT);
 
         QuoteResponse saved = quoteResponseRepository.save(response);
 
@@ -77,17 +76,14 @@ public class QuoteResponseServiceImpl implements IQuoteResponseService {
     public QuoteResponse markAsViewed(Long id) {
         QuoteResponse response = quoteResponseRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("QuoteResponse not found with id: " + id));
-        response.setStatus(QuoteStatus.VIEWED);
         return quoteResponseRepository.save(response);
     }
 
     public QuoteResponse accept(Long id) {
         QuoteResponse response = quoteResponseRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("QuoteResponse not found with id: " + id));
-        response.setStatus(QuoteStatus.ACCEPTED);
 
         QuoteRequest qr = response.getQuoteRequest();
-        qr.setStatus(QuoteStatus.CLOSED);
         quoteRequestRepository.save(qr);
 
         return quoteResponseRepository.save(response);
